@@ -1,0 +1,3 @@
+[builds]
+  [[builds.commands]]
+  run = "pip install -r requirements.txt"
