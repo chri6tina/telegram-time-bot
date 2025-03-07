@@ -26,21 +26,30 @@ PHT = pytz.timezone("Asia/Manila")
 EST = pytz.timezone("America/New_York")
 
 async def start(update: Update, context: CallbackContext) -> None:
-    """Send a welcome message when /start is used."""
+    """Send a professional welcome message when /start is used."""
     welcome_message = (
-        "👋 **Welcome to the EST ↔ PHT Time Converter Bot!**\n\n"
-        "This bot helps you quickly convert times between **Eastern Standard Time (EST)** and **Philippine Time (PHT)**.\n\n"
-        "✅ **How to Use:**\n"
-        "1️⃣ Type a time (e.g., `7pm`, `1 AM`) to convert it from EST to PHT or PHT to EST.\n"
-        "2️⃣ Use `/time` to see the current time in PHT.\n\n"
+        "🌟 **Welcome to the EST ↔ PHT Time Converter Bot!** 🌟\n\n"
+        "This bot is designed to make time conversions between **Eastern Standard Time (EST)** and **Philippine Time (PHT)** quick and easy.\n\n"
+        "📅 **How to Use:**\n"
+        "1. To see the current time in PHT, use the `/time` command.\n"
+        "2. To convert a specific time, simply type it in the chat (e.g., `7pm`, `1 AM`).\n\n"
+        "🔄 **Examples:**\n"
+        "- Type `7pm` to see:\n"
+        "  ```\n"
+        "  7pm PHT ➡️ 6am EST (same day)\n"
+        "  7pm EST ➡️ 8am PHT (next day)\n"
+        "  ```\n"
+        "- Type `/time` to see the current time in PHT.\n\n"
         "Let's get started! 🚀"
     )
-    await update.message.reply_text(welcome_message)
+    await update.message.reply_text(welcome_message, parse_mode="Markdown")
 
 async def current_time(update: Update, context: CallbackContext) -> None:
     """Send the current time in PHT when /time is used."""
     current_pht_time = datetime.now(PHT)
-    await update.message.reply_text(f"{current_pht_time.strftime('%I:%M%p PHT (%B %d)')}".lower())
+    # Remove leading zero from the hour
+    formatted_time = current_pht_time.strftime("%I:%M%p PHT (%B %d)").lstrip("0").replace(" 0", " ")
+    await update.message.reply_text(formatted_time.lower())
 
 async def handle_time_input(update: Update, context: CallbackContext) -> None:
     """Automatically converts user-provided time to both PHT and EST with dates."""
@@ -68,9 +77,12 @@ async def handle_time_input(update: Update, context: CallbackContext) -> None:
         day_status_pht_to_est = "same day" if pht_time.day == est_time_from_pht.day else (
             "next day" if est_time_from_pht.day > pht_time.day else "previous day"
         )
+        # Remove leading zero from the hour
+        pht_time_str = pht_time.strftime("%I:%M%p PHT").lstrip("0").replace(" 0", " ")
+        est_time_str = est_time_from_pht.strftime("%I:%M%p EST").lstrip("0").replace(" 0", " ")
         pht_to_est_response = (
-            f"{pht_time.strftime('%I:%M%p PHT')} ➡️ {est_time_from_pht.strftime('%I:%M%p EST')} ({day_status_pht_to_est})"
-        ).lower()
+            f"{pht_time_str.lower()} ➡️ {est_time_str.lower()} ({day_status_pht_to_est})"
+        )
 
         # Convert EST to PHT
         est_time = EST.localize(user_time)
@@ -78,9 +90,12 @@ async def handle_time_input(update: Update, context: CallbackContext) -> None:
         day_status_est_to_pht = "same day" if est_time.day == pht_time_from_est.day else (
             "next day" if pht_time_from_est.day > est_time.day else "previous day"
         )
+        # Remove leading zero from the hour
+        est_time_str = est_time.strftime("%I:%M%p EST").lstrip("0").replace(" 0", " ")
+        pht_time_str = pht_time_from_est.strftime("%I:%M%p PHT").lstrip("0").replace(" 0", " ")
         est_to_pht_response = (
-            f"{est_time.strftime('%I:%M%p EST')} ➡️ {pht_time_from_est.strftime('%I:%M%p PHT')} ({day_status_est_to_pht})"
-        ).lower()
+            f"{est_time_str.lower()} ➡️ {pht_time_str.lower()} ({day_status_est_to_pht})"
+        )
 
         # Send both responses
         await update.message.reply_text(pht_to_est_response)
