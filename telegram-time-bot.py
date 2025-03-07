@@ -40,7 +40,7 @@ async def start(update: Update, context: CallbackContext) -> None:
 async def current_time(update: Update, context: CallbackContext) -> None:
     """Send the current time in PHT when /time is used."""
     current_pht_time = datetime.now(PHT)
-    await update.message.reply_text(f"{current_pht_time.strftime('%I:%M %p PHT (%B %d, %Y)')}")
+    await update.message.reply_text(f"{current_pht_time.strftime('%I:%M%p PHT (%B %d)')}".lower())
 
 async def handle_time_input(update: Update, context: CallbackContext) -> None:
     """Automatically converts user-provided time to both PHT and EST with dates."""
@@ -65,16 +65,22 @@ async def handle_time_input(update: Update, context: CallbackContext) -> None:
         # Convert PHT to EST
         pht_time = PHT.localize(user_time)
         est_time_from_pht = pht_time.astimezone(EST)
-        pht_to_est_response = (
-            f"{pht_time.strftime('%I:%M %p PHT')} ➡️ {est_time_from_pht.strftime('%I:%M %p EST (%B %d, %Y)')}"
+        day_status_pht_to_est = "same day" if pht_time.day == est_time_from_pht.day else (
+            "next day" if est_time_from_pht.day > pht_time.day else "previous day"
         )
+        pht_to_est_response = (
+            f"{pht_time.strftime('%I:%M%p PHT')} ➡️ {est_time_from_pht.strftime('%I:%M%p EST')} ({day_status_pht_to_est})"
+        ).lower()
 
         # Convert EST to PHT
         est_time = EST.localize(user_time)
         pht_time_from_est = est_time.astimezone(PHT)
-        est_to_pht_response = (
-            f"{est_time.strftime('%I:%M %p EST')} ➡️ {pht_time_from_est.strftime('%I:%M %p PHT (%B %d, %Y)')}"
+        day_status_est_to_pht = "same day" if est_time.day == pht_time_from_est.day else (
+            "next day" if pht_time_from_est.day > est_time.day else "previous day"
         )
+        est_to_pht_response = (
+            f"{est_time.strftime('%I:%M%p EST')} ➡️ {pht_time_from_est.strftime('%I:%M%p PHT')} ({day_status_est_to_pht})"
+        ).lower()
 
         # Send both responses
         await update.message.reply_text(pht_to_est_response)
